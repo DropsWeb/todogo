@@ -1,0 +1,38 @@
+version: '3.8'
+
+networks:
+    todonet:
+        driver: bridge
+
+
+services:
+    go_app:
+      build:
+        context: ../
+        dockerfile: .ops/Dockerfile 
+      container_name: todo_app
+      environment:
+        GOOSE_DRIVER: postgres
+        GOOSE_DBSTRING: postgres://postgres:postgres@postgres:5432/todogo
+        GOOSE_MIGRATION_DIR: ./database/migrations
+        GOOSE_TABLE: custom.goose_migrations
+      ports:
+        - "8132:8132"
+      networks:
+        - todonet
+      restart: always
+      extra_hosts:
+        - 'host.docker.internal:host-gateway'
+      depends_on:
+        - postgres
+    postgres:
+      image: postgres:latest
+      container_name: todo_postgres_container
+      environment:
+        POSTGRES_DB: todogo
+        POSTGRES_USER: postgres 
+        POSTGRES_PASSWORD: postgres
+      ports:
+        - "127.0.0.1:5433:5432"
+      networks:
+        - todonet

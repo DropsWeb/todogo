@@ -1,0 +1,247 @@
+swagger: "2.0"
+info:
+  title: TODO API
+  description: API for todo.antrwdev.ru.
+  version: 1.0.0
+
+host: todo.antrwdev.ru
+# host: localhost:8132
+basePath: /
+
+definitions:
+  Error:
+    type: object
+    properties:
+      code:
+        type: string
+      message:
+        type: string
+    required:
+      - code
+      - message
+
+  User:
+    type: object
+    properties:
+      id:
+        type: integer
+      email:
+        type: string
+      password:
+        type: string
+      created_at:
+        type: string
+        format: date-timr
+      updated_at:
+        type: string
+        format: date-time
+  Task:
+    type: object
+    properties:
+      id:
+        type: string
+      title:
+        type: string
+      description:
+        type: string
+      created_at:
+        type: string
+        format: date-time
+      updated_at:
+        type: string
+        format: date-time
+      user_id:
+        type: integer
+  LoginSuccess:
+    type: object
+    properties:
+      success:
+        type: boolean
+      token:
+        type: string
+
+securityDefinitions:
+  Bearer:
+    type: apiKey
+    name: Authorization
+    in: header
+
+paths:
+  /auth/register:
+    post:
+      description: Register new user
+      parameters:
+        - in: body
+          name: register
+          description: user data
+          schema:
+            type: object
+            required:
+              - email
+              - password
+            properties:
+              email:
+                type: string
+              password:
+                type: string
+      responses:
+        204:
+          description: User was created
+        500:
+          schema:
+            type: string
+          description: Server error
+  /auth/login:
+    post:
+      description: Login by email and password
+      parameters:
+        - in: body
+          name: user data
+          schema:
+            type: object
+            required:
+              - email
+              - password
+            properties:
+              email:
+                type: string
+              password:
+                type: string
+      responses:
+        200:
+          description: Successful login
+          schema:
+            $ref: "#/definitions/LoginSuccess"
+        400:
+          description: Bad Request
+        401:
+          description: Unauthorized
+        404:
+          schema:
+            type: string
+          description: User not found
+        500:
+          schema:
+            type: string
+          description: Server error
+  /tasks:
+    post:
+      description: Create task
+      security:
+        - Bearer: []
+      parameters:
+        - in: body
+          name: create_task
+          schema:
+            type: object
+            required:
+              - title
+              - description
+            properties:
+              title:
+                type: string
+              description:
+                type: string
+      responses:
+        204:
+          description: Task was created
+        500:
+          schema:
+            type: string
+          description: Server error
+    get:
+      summary: Return a list of tasks
+      description: Get a list of tasks for current user
+      security:
+        - Bearer: []
+      produces:
+        - application/json
+      responses:
+        200:
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/Task"
+        500:
+          schema:
+            type: string
+          description: Server error
+  /tasks/{id}:
+    parameters:
+      - in: path
+        name: id # Note the name is the same as in the path
+        required: true
+        type: string
+        minimum: 1
+        description: The task ID.
+    get:
+      summary: Return task by id
+      description: Get task by id
+      security:
+        - Bearer: []
+      produces:
+        - application/json
+      responses:
+        200:
+          description: OK
+          schema:
+            type: object
+            $ref: "#/definitions/Task"
+        404:
+          description: Not Found
+          schema:
+            type: object
+            $ref: "#/definitions/Error"
+        500:
+          schema:
+            type: string
+          description: Server error
+    patch:
+      summary: Update task by id
+      security:
+        - Bearer: []
+      parameters:
+        - in: body
+          name: update_task
+          schema:
+            type: object
+            required:
+              - title
+              - description
+            properties:
+              title:
+                type: string
+              description:
+                type: string
+      responses:
+        201:
+          description: Task was updated
+          schema:
+            type: object
+            $ref: "#/definitions/Task"
+        404:
+          description: Task was not found
+          schema:
+            type: object
+            $ref: "#/definitions/Error"
+        500:
+          schema:
+            type: string
+          description: Server error
+    delete:
+      summary: Delete task by id
+      security:
+        - Bearer: []
+      responses:
+        204:
+          description: Task was deleted
+        404:
+          description: Task was not found
+          schema:
+            type: object
+            $ref: "#/definitions/Error"
+        500:
+          schema:
+            type: string
+          description: Server error
