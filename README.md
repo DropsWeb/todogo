@@ -19,3 +19,6 @@ cd .ops
 
 # Запускаем сервисы в фоновом режиме
 docker-compose -p todogo up -d --build
+
+# ссылка на документацию
+https://dropsweb.github.io/todogo/
